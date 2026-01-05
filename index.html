@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preemptive Priority Scheduler with Aging</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-tasks"></i> Preemptive Priority Scheduler with Aging</h1>
+        <h2><u>Shah Zeb IM Sciences</u></h2>
+            <p class="subtitle">Visualizing how aging prevents starvation by dynamically increasing priority of waiting processes</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="panel">
+                <h2><i class="fas fa-sliders-h"></i> Process Controls</h2>
+                <div class="form-group">
+                    <label for="processName"><i class="fas fa-file-signature"></i> Process Name</label>
+                    <input type="text" id="processName" placeholder="e.g., System Process" value="P1">
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="burstTime"><i class="fas fa-clock"></i> Burst Time (ms)</label>
+                        <input type="number" id="burstTime" min="1" max="100" value="10">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="arrivalTime"><i class="fas fa-hourglass-start"></i> Arrival Time (ms)</label>
+                        <input type="number" id="arrivalTime" min="0" max="100" value="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="priority"><i class="fas fa-star"></i> Initial Priority (1=Highest, 10=Lowest)</label>
+                    <input type="number" id="priority" min="1" max="10" value="5">
+                </div>
+                
+                <div class="aging-rate-control">
+                    <label for="agingRate"><i class="fas fa-chart-line"></i> Aging Rate:</label>
+                    <div class="slider-container">
+                        <input type="range" id="agingRate" min="0" max="10" value="1" step="0.5">
+                    </div>
+                    <div class="slider-value" id="agingRateValue">1.0</div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" id="addProcess">
+                        <i class="fas fa-plus-circle"></i> Add Process
+                    </button>
+                    <button class="btn btn-success" id="startScheduler">
+                        <i class="fas fa-play"></i> Start Scheduler
+                    </button>
+                    <button class="btn" id="stepScheduler">
+                        <i class="fas fa-step-forward"></i> Step
+                    </button>
+                    <button class="btn btn-danger" id="resetScheduler">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+                
+                <div class="process-list" id="processList">
+                    <!-- Processes will be added here dynamically -->
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2><i class="fas fa-cogs"></i> Scheduler Simulation</h2>
+                <div id="schedulerStatus" class="status-indicator">
+                    <span class="status-dot"></span>
+                    Status: Ready
+                </div>
+                
+                <div class="gantt-chart">
+                    <h3><i class="fas fa-chart-bar"></i> Execution Timeline</h3>
+                    <div id="ganttChartContainer" class="gantt-container">
+                        <!-- Gantt chart will be generated here -->
+                    </div>
+                </div>
+                
+                <div class="aging-info">
+                    <h3><i class="fas fa-user-clock"></i> Aging Mechanism</h3>
+                    <p>Every 5 time units, waiting processes have their priority increased by <span id="currentAgingRate" class="highlight">1.0</span> to prevent starvation.</p>
+                    <p>Current time: <span id="currentTime" class="highlight">0</span> ms</p>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="completedProcesses">0</div>
+                        <div class="stat-label">Completed Processes</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="avgWaitTime">0</div>
+                        <div class="stat-label">Avg Wait Time (ms)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="avgTurnaroundTime">0</div>
+                        <div class="stat-label">Avg Turnaround Time (ms)</div>
+                    </div>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color running"></div>
+                        <span>Running</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color ready"></div>
+                        <span>Ready</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color waiting"></div>
+                        <span>Waiting</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color completed"></div>
+                        <span>Completed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2><i class="fas fa-info-circle"></i> How This Scheduler Works</h2>
+            <div class="explanation-grid">
+                <div class="explanation-card">
+                    <div class="explanation-icon">
+                        <i class="fas fa-sort-amount-down"></i>
+                    </div>
+                    <h3>Preemptive Priority Scheduling</h3>
+                    <ul>
+                        <li>Processes are executed based on priority (lower number = higher priority)</li>
+                        <li>Scheduler can preempt a running process if a higher priority process arrives</li>
+                        <li>Normally can lead to starvation of low-priority processes</li>
+                    </ul>
+                </div>
+                <div class="explanation-card">
+                    <div class="explanation-icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <h3>Aging Mechanism</h3>
+                    <ul>
+                        <li>Gradually increases priority of waiting processes over time</li>
+                        <li>Prevents starvation by ensuring all processes eventually get CPU time</li>
+                        <li>Aging rate controls how quickly priorities increase</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p><i class="fas fa-code"></i> Preemptive Priority Scheduler with Aging | Computer Science Operating Systems Simulation</p>
+            <p class="footer-note">Simulation demonstrates how aging prevents process starvation in priority scheduling</p>
+        </footer>
+    </div>
+
+    <script src="scheduler.js"></script>
+</body>
+</html>
